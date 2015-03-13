@@ -9,6 +9,7 @@
       this.show = bind(this.show, this);
       this.loadData = bind(this.loadData, this);
       this.query = bind(this.query, this);
+      this.mac = bind(this.mac, this);
       this.fields = bind(this.fields, this);
       this.series = [];
       this.loadData((function(_this) {
@@ -27,42 +28,56 @@
       }
     };
 
+    Chart.prototype.mac = function() {
+      if (this.data.select.mac != null) {
+        return this.data.select.mac;
+      } else {
+        return /^18FE.*/;
+      }
+    };
+
     Chart.prototype.query = function() {
       var fields;
       fields = this.fields().join(', ');
-      return "SELECT host, mac, " + fields + " FROM srach GROUP BY time(5m) WHERE mac =~ /^18FE.*/ AND time > NOW() - 3h;";
+      return "SELECT host, " + fields + " FROM srach GROUP BY time(5m) WHERE mac =~ " + (this.mac()) + " AND time > NOW() - 3h;";
     };
 
     Chart.prototype.loadData = function(cb) {
       return influxdb.query(this.query(), (function(_this) {
         return function(points) {
-          var nodes;
+          var name, nodes, serie, series;
           nodes = _.groupBy(points, function(point) {
             return point.host;
           });
+          series = {};
           _.each(nodes, function(points, host) {
-            var data;
-            data = points.map(function(point) {
-              var i, j, len, ref, res;
-              res = [point.time.getTime()];
-              ref = _this.fields();
-              for (j = 0, len = ref.length; j < len; j++) {
-                i = ref[j];
-                res.push(point[i]);
-              }
-              return res;
-            }).reverse();
-            data = _.reject(data, function(point) {
-              return point[1] == null;
-            });
-            if (data.length === 0) {
-              return;
-            }
-            return _this.series.push({
-              name: host,
-              data: data
+            return _.each(_this.fields(), function(field) {
+              var name;
+              name = host + " - " + field;
+              return series[name] || (series[name] = {
+                name: name,
+                data: []
+              });
             });
           });
+          _.each(nodes, function(points, host) {
+            var data;
+            return data = _.each(points, function(point) {
+              return _.each(_this.fields(), function(field) {
+                var name;
+                name = point.host + " - " + field;
+                return series[name].data.push([point.time.getTime(), point[field]]);
+              });
+            });
+          });
+          for (name in series) {
+            serie = series[name];
+            if (_.find(serie.data, function(item) {
+              return !!item[1];
+            })) {
+              _this.series.push(serie);
+            }
+          }
           if (cb != null) {
             return cb();
           }

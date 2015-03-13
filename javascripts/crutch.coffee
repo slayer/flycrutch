@@ -10,10 +10,15 @@ class @Chart
     else
       [@data.select.fields]
 
+  mac: =>
+    if @data.select.mac?
+      @data.select.mac
+    else
+      /^18FE.*/
 
   query: =>
     fields = @fields().join(', ')
-    "SELECT host, mac, #{fields} FROM srach GROUP BY time(5m) WHERE mac =~ /^18FE349E.*/ AND time > NOW() - 3h;"
+    "SELECT host, #{fields} FROM srach GROUP BY time(5m) WHERE mac =~ #{@mac()} AND time > NOW() - 3h;"
 
   loadData: (cb) =>
     influxdb.query @query(), (points) =>
@@ -24,7 +29,7 @@ class @Chart
         # console.log "#{host} points: ", points
         _.each @fields(), (field) =>
           name = "#{host} - #{field}"
-          series[name] ||= name: name, data: []
+          series[name] ||= {name: name, data: []}
 
       _.each nodes, (points, host) =>
         data = _.each points, (point) =>
@@ -35,7 +40,10 @@ class @Chart
       # Fill @series if data present
       for name, serie of series
         if _.find(serie.data, (item) -> !!item[1])
+          serie.data = serie.data.reverse()
           @series.push serie
+
+      # console.log "series: ", series
 
       cb() if cb?
 
@@ -44,7 +52,8 @@ class @Chart
     div = $('<div>').addClass("chart")
     $("#content").append div
 
-    params =
+    params = _.clone(@data.chart)
+    _.merge params,
       chart:
         renderTo: div[0]
         type: 'spline'
@@ -61,7 +70,7 @@ class @Chart
         borderWidth: 1
       series: @series
 
-    # console.log "params: ", params
+    console.log "params: ", params
     @chart = new Highcharts.Chart params
 
 
@@ -77,8 +86,15 @@ $(document).ready ->
     password: 'webface2015'
     database: 'esp8266'
 
+  Highcharts.setOptions global: useUTC: false
+
+  defaults = graphs.defaults
+  delete graphs.defaults
   for name, graph_data of graphs
     # console.log "graph_data", graph_data
-    chart = new Chart(name, graph_data)
+    data = _.cloneDeep(defaults)
+    _.merge data, graph_data
+    console.log "graph_data", data
+    chart = new Chart(name, data)
     window.charts.push chart
 
