@@ -11,14 +11,18 @@ class @Chart
       [@data.select.fields]
 
   mac: =>
-    if @data.select.mac?
+    if /18FE/.test(window.location.search)
+      window.location.search.substring(1)
+    else if @data.select.mac?
       @data.select.mac
     else
-      /^18FE.*/
+      "^18FE.*"
 
   query: =>
     fields = @fields().join(', ')
-    "SELECT host, #{fields} FROM srach GROUP BY time(5m) WHERE mac =~ #{@mac()} AND time > NOW() - 3h;"
+    r = "SELECT host, #{fields} FROM srach GROUP BY time(5m) WHERE mac =~ /#{@mac()}/ AND time > NOW() - 3h;"
+    # console.log "query: ", r
+    r
 
   loadData: (cb) =>
     influxdb.query @query(), (points) =>
@@ -56,7 +60,6 @@ class @Chart
     _.merge params,
       chart:
         renderTo: div[0]
-        type: 'spline'
         height: 550
       title: text: @data.chart.title
       xAxis: type: 'datetime'
@@ -67,14 +70,19 @@ class @Chart
         borderWidth: 1
       series: @series
 
-    console.log "params: ", params
-    @chart = new Highcharts.Chart params
+    # console.log "params: ", params
+    if params.series.length > 0
+      @chart = new Highcharts.Chart params
 
 
 # Once DOM (document) is finished loading
 $(document).ready ->
   # Charts definition
   window.charts = []
+
+  createGraph = (data) ->
+    chart = new Chart(name, data)
+    window.charts.push chart
 
   window.influxdb = new InfluxDB
     host: 'esp8266.flymon.net'
@@ -91,7 +99,5 @@ $(document).ready ->
     # console.log "graph_data", graph_data
     data = _.cloneDeep(defaults)
     _.merge data, graph_data
-    console.log "graph_data", data
-    chart = new Chart(name, data)
-    window.charts.push chart
+    createGraph data
 

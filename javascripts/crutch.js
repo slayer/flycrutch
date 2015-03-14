@@ -29,17 +29,20 @@
     };
 
     Chart.prototype.mac = function() {
-      if (this.data.select.mac != null) {
+      if (/18FE/.test(window.location.search)) {
+        return window.location.search.substring(1);
+      } else if (this.data.select.mac != null) {
         return this.data.select.mac;
       } else {
-        return /^18FE.*/;
+        return "^18FE.*";
       }
     };
 
     Chart.prototype.query = function() {
-      var fields;
+      var fields, r;
       fields = this.fields().join(', ');
-      return "SELECT host, " + fields + " FROM srach GROUP BY time(5m) WHERE mac =~ " + (this.mac()) + " AND time > NOW() - 3h;";
+      r = "SELECT host, " + fields + " FROM srach GROUP BY time(5m) WHERE mac =~ /" + (this.mac()) + "/ AND time > NOW() - 3h;";
+      return r;
     };
 
     Chart.prototype.loadData = function(cb) {
@@ -94,7 +97,6 @@
       _.merge(params, {
         chart: {
           renderTo: div[0],
-          type: 'spline',
           height: 550
         },
         title: {
@@ -111,8 +113,9 @@
         },
         series: this.series
       });
-      console.log("params: ", params);
-      return this.chart = new Highcharts.Chart(params);
+      if (params.series.length > 0) {
+        return this.chart = new Highcharts.Chart(params);
+      }
     };
 
     return Chart;
@@ -120,8 +123,13 @@
   })();
 
   $(document).ready(function() {
-    var chart, data, defaults, graph_data, name, results;
+    var createGraph, data, defaults, graph_data, name, results;
     window.charts = [];
+    createGraph = function(data) {
+      var chart;
+      chart = new Chart(name, data);
+      return window.charts.push(chart);
+    };
     window.influxdb = new InfluxDB({
       host: 'esp8266.flymon.net',
       port: 8086,
@@ -141,9 +149,7 @@
       graph_data = graphs[name];
       data = _.cloneDeep(defaults);
       _.merge(data, graph_data);
-      console.log("graph_data", data);
-      chart = new Chart(name, data);
-      results.push(window.charts.push(chart));
+      results.push(createGraph(data));
     }
     return results;
   });
