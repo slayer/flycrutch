@@ -60,9 +60,6 @@ class @Chart
         height: 550
       title: text: @data.chart.title
       xAxis: type: 'datetime'
-      tooltip:
-        crosshairs: true
-        valueSuffix: ' bytes'
       legend:
         layout: 'vertical'
         align: 'right'

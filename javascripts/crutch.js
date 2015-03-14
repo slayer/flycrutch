@@ -75,6 +75,7 @@
             if (_.find(serie.data, function(item) {
               return !!item[1];
             })) {
+              serie.data = serie.data.reverse();
               _this.series.push(serie);
             }
           }
@@ -89,7 +90,8 @@
       var div, params;
       div = $('<div>').addClass("chart");
       $("#content").append(div);
-      params = {
+      params = _.clone(this.data.chart);
+      _.merge(params, {
         chart: {
           renderTo: div[0],
           type: 'spline',
@@ -101,10 +103,6 @@
         xAxis: {
           type: 'datetime'
         },
-        tooltip: {
-          crosshairs: true,
-          valueSuffix: ' bytes'
-        },
         legend: {
           layout: 'vertical',
           align: 'right',
@@ -112,7 +110,8 @@
           borderWidth: 1
         },
         series: this.series
-      };
+      });
+      console.log("params: ", params);
       return this.chart = new Highcharts.Chart(params);
     };
 
@@ -121,7 +120,7 @@
   })();
 
   $(document).ready(function() {
-    var chart, graph_data, name, results;
+    var chart, data, defaults, graph_data, name, results;
     window.charts = [];
     window.influxdb = new InfluxDB({
       host: 'esp8266.flymon.net',
@@ -130,10 +129,20 @@
       password: 'webface2015',
       database: 'esp8266'
     });
+    Highcharts.setOptions({
+      global: {
+        useUTC: false
+      }
+    });
+    defaults = graphs.defaults;
+    delete graphs.defaults;
     results = [];
     for (name in graphs) {
       graph_data = graphs[name];
-      chart = new Chart(name, graph_data);
+      data = _.cloneDeep(defaults);
+      _.merge(data, graph_data);
+      console.log("graph_data", data);
+      chart = new Chart(name, data);
       results.push(window.charts.push(chart));
     }
     return results;
