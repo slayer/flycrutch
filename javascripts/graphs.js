@@ -1,9 +1,7 @@
-  graphs = {
-
-    "defaults": {
+  defaults = {
       "chart": {
         chart: {
-          type: 'column'
+          type: 'spline'
         },
         "plotOptions": {
           "spline": {
@@ -17,56 +15,17 @@
           "crosshairs": true
         }
       }
-    },
+  }
 
 
 
-    "example": {
+  graphs = [
+
+    {
       chart: {
-        title: 'Example graph',
-        type: 'column',
-        width: '100',
-
-        yAxis: {
-          title: {
-            text: 'Essence'
-          },
-          min: -10,
-          max: 50
+        chart: {
+          type: 'column'
         },
-
-        tooltip: {
-          crosshairs: true,
-          valueSuffix: ' EX'
-        },
-
-        plotOptions: {
-          series: {
-            marker: {
-              symbol: 'diamond',
-              enabled: 'true'
-            }
-          }
-        }
-
-      },
-      select: {
-        fields: ["field1", "field2"],
-        mac: /18FE349B/
-      }
-    },
-
-
-
-
-
-
-
-
-
-
-    "uptime": {
-      chart: {
         title: 'Uptime',
         type: 'column',
         yAxis: {
@@ -93,21 +52,17 @@
       }
     },
 
-
-
-
-
-    "temp": {
+    {
       chart: {
         title: 'Temperature',
         yAxis: {
           title: {
-            text: 'C'
+            text: '°C'
           }
         },
         tooltip: {
           crosshairs: true,
-          valueSuffix: ' C'
+          valueSuffix: ' °C'
         }
       },
       select: {
@@ -115,11 +70,7 @@
       }
     },
 
-
-
-
-
-    "memory": {
+    {
       chart: {
         title: 'Free Memory',
         yAxis: {
@@ -138,10 +89,7 @@
     },
 
 
-
-
-
-    "pressure": {
+    {
       chart: {
         title: 'Atmospheric pressure',
         yAxis: {
@@ -159,11 +107,7 @@
       }
     },
 
-
-
-
-
-    "power": {
+    {
       chart: {
         title: 'Power Voltage',
         yAxis: {
@@ -182,10 +126,7 @@
     },
 
 
-
-
-
-    "adc": {
+    {
       chart: {
         title: 'Analog-to-digital converter',
         yAxis: {
@@ -209,14 +150,31 @@
 
 
 
-    "humidity": {
+    {
       chart: {
         title: 'Humidity',
         yAxis: {
           title: {
              text: '%'
           },
-          min: 0
+          min: 0,
+          plotLines: [{
+            value: 20,
+            color: 'green',
+            dashStyle: 'shortdash',
+            width: 1,
+            label: {
+              text: 'Critical low'
+            }
+          }, {
+            value: 90,
+            color: 'red',
+            dashStyle: 'shortdash',
+            width: 1,
+            label: {
+              text: 'Critical high'
+            }
+          }],
         },
         tooltip: {
           crosshairs: true,
@@ -232,7 +190,7 @@
 
 
 
-    "counter": {
+    {
       chart: {
         title: 'Counter',
         yAxis: {
@@ -255,7 +213,7 @@
 
 
 
-    "gpio": {
+     {
       chart: {
         title: 'GPIO Input Monitor',
 
@@ -279,7 +237,7 @@
 
 
 
-    "light": {
+    {
       chart: {
         title: 'Brightness',
         yAxis: {
@@ -296,10 +254,7 @@
       select: {
         fields: ["light"]
       }
-    },
+    }
 
 
-
-
-
-  };
+];

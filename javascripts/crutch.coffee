@@ -1,8 +1,11 @@
+window.log = -> try console.log.apply(console, arguments)
+
 class @Chart
-  constructor: (@name, @data) ->
+  constructor: (@data, @done) ->
     @series = []
     @loadData =>
       @show()
+      @done() if @done
 
   fields: =>
     if @data.select?.fields?.join?
@@ -18,11 +21,12 @@ class @Chart
     else
       "^18FE.*"
 
+  period: ->
+    "12h"
+
   query: =>
-    fields = @fields().join(', ')
-    r = "SELECT host, #{fields} FROM srach GROUP BY time(5m) WHERE mac =~ /#{@mac()}/ AND time > NOW() - 3h;"
-    # console.log "query: ", r
-    r
+    fields = @fields().join ', '
+    "SELECT host, #{fields} FROM srach GROUP BY time(5m) WHERE mac =~ /#{@mac()}/ AND time > NOW() - #{@period()};"
 
   loadData: (cb) =>
     influxdb.query @query(), (points) =>
@@ -64,9 +68,10 @@ class @Chart
       title: text: @data.chart.title
       xAxis: type: 'datetime'
       legend:
-        layout: 'vertical'
-        align: 'right'
-        verticalAlign: 'middle'
+        layout: 'horizontal'
+        align: 'center'
+        verticalAlign: 'bottom'
+
         borderWidth: 1
       series: @series
 
@@ -80,9 +85,6 @@ $(document).ready ->
   # Charts definition
   window.charts = []
 
-  createGraph = (data) ->
-    chart = new Chart(name, data)
-    window.charts.push chart
 
   window.influxdb = new InfluxDB
     host: 'esp8266.flymon.net'
@@ -93,11 +95,9 @@ $(document).ready ->
 
   Highcharts.setOptions global: useUTC: false
 
-  defaults = graphs.defaults
-  delete graphs.defaults
-  for name, graph_data of graphs
+  async.eachSeries graphs, (graph_data, cb) ->
     # console.log "graph_data", graph_data
     data = _.cloneDeep(defaults)
     _.merge data, graph_data
-    createGraph data
-
+    chart = new Chart(data, cb)
+    window.charts.push chart
