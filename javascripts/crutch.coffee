@@ -3,9 +3,19 @@ window.log = -> try console.log.apply(console, arguments)
 class @Chart
   constructor: (@data, @done) ->
     @series = []
+    @parseArgs window.location.search.substring(1)
     @loadData =>
       @show()
       @done() if @done
+
+  parseArgs: (qstr) ->
+    @argv = {}
+    a = qstr.split('&')
+    for i of a
+      b = a[i].split('=')
+      @argv[decodeURIComponent(b[0])] = decodeURIComponent(b[1])
+    @argv
+
 
   fields: =>
     if @data.select?.fields?.join?
@@ -13,22 +23,32 @@ class @Chart
     else
       [@data.select.fields]
 
-  mac: =>
-    if /18FE/.test(window.location.search)
-      window.location.search.substring(1)
+  macCondition: =>
+    macs = (str) ->
+      macs = str.split(",").map (s) -> "mac = '#{s}'"
+      "( #{macs.join(" OR ")} )"
+
+    if @argv.macs
+      macs @argv.macs
+    else if @data.select.macs?
+      macs @data.select.macs
     else if @data.select.mac?
       @data.select.mac
     else
-      "^18FE.*"
+      "mac =~ /^18FE.*/"
 
   period: ->
-    "12h"
+    if @argv.period
+      @argv.period
+    else
+      "12h"
 
   query: =>
     fields = @fields().join ', '
-    "SELECT host, #{fields} FROM srach GROUP BY time(5m) WHERE mac =~ /#{@mac()}/ AND time > NOW() - #{@period()};"
+    "SELECT host, #{fields} FROM srach GROUP BY time(5m) fill(0) WHERE #{@macCondition()} AND time > NOW() - #{@period()};"
 
   loadData: (cb) =>
+    log "query: ", @query()
     influxdb.query @query(), (points) =>
       nodes = _.groupBy points, (point) -> point.host
       series = {}
