@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 
 coffee -c javascripts/crutch.coffee
 # rsync -avz root@flymon.net:/var/www/esp8266/crutch/javascripts/*.js javascripts/  || exit 0

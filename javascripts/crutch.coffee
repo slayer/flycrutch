@@ -17,11 +17,24 @@ class @Chart
     @argv
 
 
-  fields: =>
-    if @data.select?.fields?.join?
-      @data.select.fields
+  queryFields: =>
+    fields = @data.select?.fields
+    if fields?.join?
+      fields
+    else if typeof fields is 'object'
+      _.map fields, (k, v) -> "#{k} AS #{v}"
     else
       [@data.select.fields]
+
+  fieldNames: =>
+    fields = @data.select?.fields
+    if fields?.join?
+      fields
+    else if typeof fields is 'object'
+      _.map fields, (k, v) -> v
+    else
+      [@data.select.fields]
+
 
   macCondition: =>
     macs = (str) ->
@@ -33,7 +46,7 @@ class @Chart
     else if @data.select.macs?
       macs @data.select.macs
     else if @data.select.mac?
-      @data.select.mac
+      "mac = '#{@data.select.mac}'"
     else
       "mac =~ /^18FE.*/"
 
@@ -44,8 +57,8 @@ class @Chart
       "12h"
 
   query: =>
-    fields = @fields().join ', '
-    "SELECT host, #{fields} FROM srach GROUP BY time(5m) fill(0) WHERE #{@macCondition()} AND time > NOW() - #{@period()};"
+    fields = @queryFields().join ', '
+    "SELECT host, #{fields} FROM srach GROUP BY time(10m) fill(0) WHERE #{@macCondition()} AND time > NOW() - #{@period()};"
 
   loadData: (cb) =>
     log "query: ", @query()
@@ -55,13 +68,13 @@ class @Chart
 
       _.each nodes, (points, host) =>
         # console.log "#{host} points: ", points
-        _.each @fields(), (field) =>
+        _.each @fieldNames(), (field) =>
           name = "#{host} - #{field}"
           series[name] ||= {name: name, data: []}
 
       _.each nodes, (points, host) =>
         data = _.each points, (point) =>
-          _.each @fields(), (field) =>
+          _.each @fieldNames(), (field) =>
             name = "#{point.host} - #{field}"
             series[name].data.push [point.time.getTime(), point[field]]
 
@@ -102,22 +115,25 @@ class @Chart
 
 # Once DOM (document) is finished loading
 $(document).ready ->
-  # Charts definition
-  window.charts = []
+
+  unless window.location.search.length is 0
+    $('#no-data').hide()
+    # Charts definition
+    window.charts = []
 
 
-  window.influxdb = new InfluxDB
-    host: 'esp8266.flymon.net'
-    port: 8086
-    username: 'webface'
-    password: 'webface2015'
-    database: 'esp8266'
+    window.influxdb = new InfluxDB
+      host: 'esp8266.flymon.net'
+      port: 8086
+      username: 'webface'
+      password: 'webface2015'
+      database: 'esp8266'
 
-  Highcharts.setOptions global: useUTC: false
+    Highcharts.setOptions global: useUTC: false
 
-  async.eachSeries graphs, (graph_data, cb) ->
-    # console.log "graph_data", graph_data
-    data = _.cloneDeep(defaults)
-    _.merge data, graph_data
-    chart = new Chart(data, cb)
-    window.charts.push chart
+    async.eachSeries graphs, (graph_data, cb) ->
+      # console.log "graph_data", graph_data
+      data = _.cloneDeep(defaults)
+      _.merge data, graph_data
+      chart = new Chart(data, cb)
+      window.charts.push chart
