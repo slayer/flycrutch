@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta name="author" content="FlyMon manual" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="REFRESH" content="300">
+    <title>FlyCrutch - ESP8266</title>
+    <link rel="shortcut icon" type="image/vnd.microsoft.icon" href="/favicon.ico" />
+
+    <!-- Add styles -->
+    <link href="stylesheets/main.css" rel="stylesheet" type="text/css" />
+
+    <!-- Add scripts -->
+    <script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+    <script src="/javascripts/textile.js"></script>
+</head>
+<body>
+    <div id="no-data">
+      <h2>Fuck off</h2>
+    </div>
+    <div id="content">
+    </div>
+</body>
+<script language="javascript">
+  $.ajax({
+    url: "/README.textile",
+  }).done( function(data) {
+    console.log(data)
+    var html = textile(data)
+    console.log(html)
+    $("#content").html(html)
+  })
+</script>
+</html>
