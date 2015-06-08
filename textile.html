@@ -16,9 +16,6 @@
     <script src="/javascripts/textile.js"></script>
 </head>
 <body>
-    <div id="no-data">
-      <h2>Fuck off</h2>
-    </div>
     <div id="content">
     </div>
 </body>
@@ -36,7 +33,7 @@
 
   $(document).ready(function(){
     loadTextile("index")
-    $(document).on("click", function(event) {
+    $('#content').on("click", "a", function(event) {
       event.preventDefault();
       loadTextile(event.target.pathname)
     })
