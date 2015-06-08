@@ -23,13 +23,24 @@
     </div>
 </body>
 <script language="javascript">
-  $.ajax({
-    url: "/README.textile",
-  }).done( function(data) {
-    console.log(data)
-    var html = textile(data)
-    console.log(html)
-    $("#content").html(html)
+  function loadTextile(filename) {
+    var url = filename + ".textile";
+    $.ajax({
+      url: url,
+    }).done( function(data) {
+      var html = textile(data)
+      //console.log(html)
+      $("#content").html(html)
+    })
+  }
+
+  $(document).ready(function(){
+    loadTextile("index")
+    $(document).on("click", function(event) {
+      event.preventDefault();
+      loadTextile(event.target.pathname)
+    })
   })
+
 </script>
 </html>

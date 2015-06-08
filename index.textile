@@ -1,4 +1,9 @@
+
 h1. textile.js
+
+"link 1":/link1
+
+"link 2":/link2
 
 Attempt at an implementation of fully featured Textile parser in JavaScript that runs reasonably fast and mostly avoids outputting broken HTML.
 
@@ -12,7 +17,7 @@ bc. $ npm install textile-js
 
 h2. Options
 
-The basic interface mimics "marked":https://github.com/chjj/marked, the popular markdown parser. So if you use that in your project then you can support Textile as well with minimal effort.
+The basic interface mimics "marked":marked, the popular markdown parser. So if you use that in your project then you can support Textile as well with minimal effort.
 
 Currently, the only supported option is @breaks@ which can be used to enable/disable the default behavior of line-breaking single newlines within blocks.
 
