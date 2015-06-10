@@ -4,6 +4,10 @@ h1. textile.js
 "link 1":/link1
 
 "link 2":/link2
+"link 2 hashed":#!/link2
+
+"external":http://zftlab.org/
+
 
 Attempt at an implementation of fully featured Textile parser in JavaScript that runs reasonably fast and mostly avoids outputting broken HTML.
 
