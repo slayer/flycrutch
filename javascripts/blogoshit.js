@@ -29,7 +29,7 @@ $(document).ready(function(){
       var html = textile(data)
       $("#content").html(html)
       $("#content a").each(function (){
-        console.log("content a",  this);
+        // console.log("content a",  this);
         var $this = $(this);
         var href = $this.attr("href");
         // alredy #!
@@ -47,33 +47,33 @@ $(document).ready(function(){
     })
   }
 
-    loadTextile(window.location.hash)
+  loadTextile(window.location.hash)
 
-    $('#content').on("click", "a", function(e) {
-      console.log("event ", e);
-      // external link
-      if (e.target.hostname != window.location.hostname) {
-        // do nothing
-        return;
-      }
-      // not a left click or key modificators
-      if (e.which != 0 || e.metaKey || e.ctrlKey ) {
-        return;
-      }
-      var path = e.target.pathname;
-      if (e.target.hostname === window.location.hostname && e.target.pathname === window.location.pathname) {
-        path = e.target.hash;
-      }
-      e.preventDefault();
-      loadTextile(path)
-    })
+  $('#content').on("click", "a", function(e) {
+    console.log("event ", e);
+    // external link
+    if (e.target.hostname != window.location.hostname) {
+      // do nothing
+      return;
+    }
+    // not a left click or key modificators
+    if (e.which != 1 || e.metaKey || e.ctrlKey ) {
+      return;
+    }
+    var path = e.target.pathname;
+    if (e.target.hostname === window.location.hostname && e.target.pathname === window.location.pathname) {
+      path = e.target.hash;
+    }
+    e.preventDefault();
+    loadTextile(path)
+  })
 
-    //Pop State
-    $(window).on('popstate', function(e){
-        var state = e.originalEvent.state;
-        if(e.originalEvent && state){
-          var path = state.path;
-          loadTextile(path, {push: false});
-        }
-    });
+  //Pop State
+  $(window).on('popstate', function(e){
+      var state = e.originalEvent.state;
+      if(e.originalEvent && state){
+        var path = state.path;
+        loadTextile(path, {push: false});
+      }
+  });
 })
