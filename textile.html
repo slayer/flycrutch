@@ -14,69 +14,10 @@
     <!-- Add scripts -->
     <script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
     <script src="/javascripts/textile.js"></script>
+    <script src="/javascripts/blogoshit.js"></script>
 </head>
 <body>
     <div id="content">
     </div>
 </body>
-<script language="javascript">
-  function loadTextile(path, options) {
-    if (!options) {
-      options = {push: true}
-    }
-    if (!path || path === "") {
-      path = "index"
-    } else if (path.slice(0,3) == "#!/") {
-      path = path.substr(3)
-    }
-    path = path.replace(/\//gi, '')
-    console.log("path: ", path)
-
-    var url = path + ".textile";
-    $.ajax({
-      url: url,
-    }).done( function(data) {
-
-      if (options.push) {
-        var bang_path = '#!/' + path;
-        if (typeof(window.history.pushState) == 'function') {
-          window.history.pushState({path: path}, bang_path, bang_path);
-        } else {
-          window.location.hash = bang_path;
-        }
-      }
-
-      var html = textile(data)
-      $("#content").html(html)
-    })
-  }
-
-  $(document).ready(function(){
-    loadTextile(window.location.hash)
-
-    $('#content').on("click", "a", function(e) {
-      console.log("event ", e);
-      if (e.target.hostname != window.location.hostname) {
-        // do nothing
-        return;
-      }
-      var path = e.target.pathname;
-      if (e.target.hostname === window.location.hostname && e.target.pathname === window.location.pathname) {
-        path = e.target.hash;
-      }
-      e.preventDefault();
-      loadTextile(path)
-    })
-
-    //Pop State
-    $(window).on('popstate', function(e){
-        var state = e.originalEvent.state;
-        if(e.originalEvent && state){
-          var path = state.path;
-          loadTextile(path, {push: false});
-        }
-    });
-  })
-
-</script>
 </html>
